@@ -1,0 +1,288 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-ivory: var(--ivory);
+  --color-onyx: var(--onyx);
+
+  --font-display: "Playfair Display", serif;
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "Poppins", sans-serif;
+}
+
+:root {
+  --radius: 0.25rem;
+
+  /* Brand */
+  --gold: oklch(0.78 0.13 85); /* #D4AF37 */
+  --gold-soft: oklch(0.88 0.09 88);
+  --ivory: oklch(0.97 0.012 85); /* #F8F5F0 */
+  --onyx: oklch(0.16 0.005 270); /* #1A1A1A */
+
+  /* Mapped */
+  --background: var(--onyx);
+  --foreground: var(--ivory);
+  --card: oklch(0.2 0.005 270);
+  --card-foreground: var(--ivory);
+  --popover: oklch(0.18 0.005 270);
+  --popover-foreground: var(--ivory);
+  --primary: var(--gold);
+  --primary-foreground: var(--onyx);
+  --secondary: oklch(0.24 0.005 270);
+  --secondary-foreground: var(--ivory);
+  --muted: oklch(0.22 0.005 270);
+  --muted-foreground: oklch(0.7 0.02 85);
+  --accent: var(--gold);
+  --accent-foreground: var(--onyx);
+  --destructive: oklch(0.55 0.22 27);
+  --destructive-foreground: var(--ivory);
+  --border: oklch(0.3 0.02 85 / 40%);
+  --input: oklch(0.3 0.02 85 / 40%);
+  --ring: var(--gold);
+
+  --gradient-gold: linear-gradient(135deg, oklch(0.88 0.09 88), oklch(0.72 0.13 75));
+  --gradient-radial-gold: radial-gradient(
+    circle at 50% 0%,
+    oklch(0.78 0.13 85 / 0.25),
+    transparent 60%
+  );
+  --shadow-gold: 0 20px 60px -20px oklch(0.78 0.13 85 / 0.45);
+  --shadow-deep: 0 40px 80px -30px oklch(0 0 0 / 0.8);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background: var(--gold);
+    color: var(--onyx);
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+
+  .text-gold {
+    color: var(--gold);
+  }
+  .bg-gold {
+    background-color: var(--gold);
+  }
+  .border-gold {
+    border-color: var(--gold);
+  }
+
+  .text-gradient-gold {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .bg-gradient-gold {
+    background: var(--gradient-gold);
+  }
+  .shadow-gold {
+    box-shadow: var(--shadow-gold);
+  }
+  .shadow-deep {
+    box-shadow: var(--shadow-deep);
+  }
+
+  .tracking-luxury {
+    letter-spacing: 0.35em;
+  }
+  .tracking-wide-luxury {
+    letter-spacing: 0.2em;
+  }
+
+  .divider-gold {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--gold);
+  }
+  .divider-gold::before,
+  .divider-gold::after {
+    content: "";
+    height: 1px;
+    width: 3rem;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition:
+      opacity 1.2s ease,
+      transform 1.2s cubic-bezier(0.16, 0.84, 0.3, 1);
+  }
+  .reveal.in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Subtle floating sparkle */
+  @keyframes shimmer {
+    0%,
+    100% {
+      opacity: 0.4;
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(-8px) scale(1.15);
+    }
+  }
+  .animate-shimmer {
+    animation: shimmer 4s ease-in-out infinite;
+  }
+
+  @keyframes float-slow {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+  .animate-float {
+    animation: float-slow 8s ease-in-out infinite;
+  }
+
+  @keyframes drift {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    100% {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+  .animate-drift {
+    animation: drift 60s linear infinite;
+  }
+
+  @keyframes shimmer-loader {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .hover-gold {
+    transition: color 0.3s ease;
+  }
+  .hover-gold:hover {
+    color: var(--gold);
+  }
+
+  .btn-gold {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.95rem 2.25rem;
+    background: var(--gradient-gold);
+    color: var(--onyx);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    transition:
+      transform 0.4s ease,
+      box-shadow 0.4s ease;
+  }
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-gold);
+  }
+
+  .btn-ghost-gold {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.95rem 2.25rem;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    transition:
+      background 0.4s ease,
+      color 0.4s ease;
+  }
+  .btn-ghost-gold:hover {
+    background: var(--gold);
+    color: var(--onyx);
+  }
+}
