@@ -12,13 +12,13 @@ export function LoadingScreen() {
     // Trigger fade animation
     const fadeTimeout = setTimeout(() => {
       setFade(true);
-    }, 1500);
+    }, 400);
 
     // Unmount component and restore scroll
     const unmountTimeout = setTimeout(() => {
       setMounted(false);
       document.body.style.overflow = "";
-    }, 2200);
+    }, 800);
 
     return () => {
       clearTimeout(fadeTimeout);

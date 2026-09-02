@@ -1,7 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Heart, Search, ShoppingBag, X } from "lucide-react";
-import { products, categories, inr, type Category, type Product } from "@/lib/products";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useReveal } from "@/lib/use-reveal";
+import { useState, useMemo, useEffect } from "react";
+import {
+  Search,
+  SlidersHorizontal,
+  Heart,
+  ShoppingBag,
+  X,
+  ChevronDown,
+  Filter,
+} from "lucide-react";
+import { occasions, inr, type Category, type Occasion } from "@/lib/products";
+import { useProducts } from "@/lib/productStore";
+import { useCMS } from "@/lib/cms";
+import { useCart } from "@/lib/cart";
+import { useWishlist } from "@/lib/wishlist";
 
 export const Route = createFileRoute("/shop")({
   head: () => ({
@@ -10,224 +23,387 @@ export const Route = createFileRoute("/shop")({
       {
         name: "description",
         content:
-          "Shop sarees, lehengas, ethnic wear and casual luxury from Rassa Boutique. Pan-India shipping, secure checkout.",
+          "Shop silk sarees, kasavu sarees, Kerala bridal wear, churidars, kurtis, and more from Rassa Boutique, Kozhikode. Pan-India shipping available.",
       },
       { property: "og:title", content: "Shop — Rassa Boutique" },
-      {
-        property: "og:description",
-        content: "Shop the Rassa Boutique edit — sarees, lehengas, ethnic and casual luxury.",
-      },
     ],
   }),
   component: ShopPage,
 });
 
-type Sort = "featured" | "low" | "high";
+type Sort = "featured" | "new" | "price-low" | "price-high" | "bestseller";
 
 function ShopPage() {
+  useReveal();
+  const { addToCart } = useCart();
+  const { isWishlisted, toggleWishlist } = useWishlist();
+
   const [query, setQuery] = useState("");
-  const [cat, setCat] = useState<Category | "All">("All");
+  const [selectedCategory, setSelectedCategory] = useState<Category | "">("");
+  const [selectedOccasion, setSelectedOccasion] = useState<Occasion | "">("");
   const [sort, setSort] = useState<Sort>("featured");
-  const [wishlist, setWishlist] = useState<Set<string>>(new Set());
-  const [cart, setCart] = useState<Product[]>([]);
-  const [cartOpen, setCartOpen] = useState(false);
+  const [maxPrice, setMaxPrice] = useState(60000);
+  const [showInStockOnly, setShowInStockOnly] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
 
-  const list = useMemo(() => {
-    let r = products.filter(
-      (p) =>
-        (cat === "All" || p.category === cat) && p.name.toLowerCase().includes(query.toLowerCase()),
-    );
-    if (sort === "low") r = [...r].sort((a, b) => a.price - b.price);
-    if (sort === "high") r = [...r].sort((a, b) => b.price - a.price);
-    return r;
-  }, [query, cat, sort]);
+  const { products, loading: productsLoading } = useProducts();
+  const { cms, loading: cmsLoading } = useCMS();
+  const dynamicCategories = cms?.categories.filter((c) => c.visible) || [];
+  const loading = productsLoading || cmsLoading;
 
-  const toggleWish = (id: string) => {
-    setWishlist((w) => {
-      const n = new Set(w);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
+  if (typeof window !== "undefined") {
+    (window as any).__PRODUCTS_DEBUG__ = products;
+  }
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("rassa_recently_viewed") ?? "[]";
+      setRecentlyViewed(JSON.parse(raw) as string[]);
+    } catch {
+      /* noop */
+    }
+  }, []);
+
+  const filtered = useMemo(() => {
+    // 1. Filter out hidden products first as per the rule: isHidden = true -> product must not appear publicly
+    let result = products
+      .filter((p) => !p.isHidden)
+      .filter((p) => {
+        const matchQuery =
+          !query ||
+          p.name.toLowerCase().includes(query.toLowerCase()) ||
+          p.category?.toLowerCase().includes(query.toLowerCase());
+        const matchCat = !selectedCategory || p.category === selectedCategory;
+        const matchOcc =
+          !selectedOccasion || (p.occasions && p.occasions.includes(selectedOccasion));
+        const matchPrice = p.price <= maxPrice;
+        const matchStock = !showInStockOnly || p.inStock;
+        return matchQuery && matchCat && matchOcc && matchPrice && matchStock;
+      });
+
+    // 2. Sort results without hiding them
+    if (sort === "new")
+      result = result
+        .filter((p) => p.isNew || p.isNewArrival)
+        .concat(result.filter((p) => !p.isNew && !p.isNewArrival));
+    else if (sort === "price-low") result = [...result].sort((a, b) => a.price - b.price);
+    else if (sort === "price-high") result = [...result].sort((a, b) => b.price - a.price);
+    else if (sort === "bestseller")
+      result = result.filter((p) => p.isBestseller).concat(result.filter((p) => !p.isBestseller));
+
+    return result;
+  }, [products, query, selectedCategory, selectedOccasion, sort, maxPrice, showInStockOnly]);
+
+  const clearFilters = () => {
+    setQuery("");
+    setSelectedCategory("");
+    setSelectedOccasion("");
+    setMaxPrice(60000);
+    setShowInStockOnly(false);
+    setSort("featured");
   };
 
-  const addToCart = (p: Product) => {
-    setCart((c) => [...c, p]);
-    setCartOpen(true);
-  };
+  const hasFilters = !!(
+    query ||
+    selectedCategory ||
+    selectedOccasion ||
+    showInStockOnly ||
+    maxPrice < 60000
+  );
 
-  const total = cart.reduce((s, p) => s + p.price, 0);
+  const recentProducts = recentlyViewed
+    .map((id) => products.find((p) => p.id === id && !p.isHidden))
+    .filter(Boolean) as typeof products;
 
   return (
-    <div className="pt-28 pb-24">
+    <div className="bg-background min-h-screen pt-24">
       {/* Header */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-10 text-center mb-12">
-        <span className="divider-gold text-[10px] tracking-luxury uppercase">The Boutique</span>
-        <h1 className="mt-4 font-display text-5xl md:text-6xl">Shop</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Pan-India shipping · Secure checkout · COD available
-        </p>
-      </section>
-
-      {/* Controls */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-10 mb-10 flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-        <div className="relative w-full lg:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search the boutique..."
-            className="w-full bg-card border border-border pl-10 pr-4 py-3 text-sm outline-none focus:border-gold"
-          />
+      <div className="max-w-7xl mx-auto px-6 lg:px-10 py-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <span className="text-[10px] tracking-luxury uppercase text-gold">Rassa Boutique</span>
+            <h1 className="mt-1 font-display text-4xl md:text-5xl">
+              Shop <span className="italic text-gradient-gold">Collections</span>
+            </h1>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            {filtered.length} product{filtered.length !== 1 ? "s" : ""}
+            {hasFilters && (
+              <button
+                onClick={clearFilters}
+                className="text-gold text-xs hover:underline flex items-center gap-1"
+              >
+                <X className="w-3 h-3" />
+                Clear filters
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {(["All", ...categories.map((c) => c.name)] as const).map((c) => (
+        {/* Search + Sort bar */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search sarees, churidars, kurtis..."
+              className="w-full bg-card border border-border pl-11 pr-4 py-3 text-sm outline-none focus:border-gold transition-colors"
+            />
+            {query && (
+              <button
+                onClick={() => setQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gold"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <div className="flex gap-2">
+            {/* Sort */}
+            <div className="relative">
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as Sort)}
+                className="appearance-none bg-card border border-border px-4 py-3 pr-8 text-sm outline-none focus:border-gold transition-colors cursor-pointer"
+              >
+                <option value="featured">Featured</option>
+                <option value="new">New Arrivals</option>
+                <option value="bestseller">Best Sellers</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+              </select>
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            </div>
+            {/* Filter toggle */}
             <button
-              key={c}
-              onClick={() => setCat(c)}
-              className={`px-4 py-2 text-[10px] tracking-luxury uppercase border transition-colors ${
-                cat === c
-                  ? "bg-gold border-gold text-onyx"
-                  : "border-border text-foreground/70 hover:border-gold hover:text-gold"
-              }`}
+              onClick={() => setShowFilters((f) => !f)}
+              className={`flex items-center gap-2 px-4 py-3 border text-sm transition-colors ${showFilters ? "border-gold text-gold bg-gold/5" : "border-border text-muted-foreground hover:border-gold hover:text-gold"}`}
             >
-              {c}
+              <SlidersHorizontal className="w-4 h-4" />
+              <span className="hidden sm:inline">Filters</span>
+              {hasFilters && <span className="w-2 h-2 rounded-full bg-gold" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Category quick pills */}
+        <div className="flex gap-2 flex-wrap mb-6">
+          <button
+            onClick={() => setSelectedCategory("")}
+            className={`px-3 py-1.5 text-[10px] tracking-luxury uppercase border transition-colors ${!selectedCategory ? "border-gold bg-gold text-onyx" : "border-border text-muted-foreground hover:border-gold"}`}
+          >
+            All
+          </button>
+          {dynamicCategories.map((c) => (
+            <button
+              key={c.slug}
+              onClick={() =>
+                setSelectedCategory(c.name === selectedCategory ? "" : (c.name as Category))
+              }
+              className={`px-3 py-1.5 text-[10px] tracking-luxury uppercase border transition-colors ${selectedCategory === c.name ? "border-gold bg-gold text-onyx" : "border-border text-muted-foreground hover:border-gold"}`}
+            >
+              {c.name}
             </button>
           ))}
         </div>
 
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value as Sort)}
-          className="bg-card border border-border px-3 py-3 text-xs tracking-wide-luxury uppercase outline-none focus:border-gold"
-        >
-          <option value="featured">Featured</option>
-          <option value="low">Price: Low to High</option>
-          <option value="high">Price: High to Low</option>
-        </select>
+        {/* Advanced filter panel */}
+        {showFilters && (
+          <div className="border border-border bg-card p-6 mb-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Occasion filter */}
+            <div>
+              <div className="text-[10px] tracking-luxury uppercase text-gold mb-3">Occasion</div>
+              <div className="flex flex-wrap gap-2">
+                {occasions.map((occ) => (
+                  <button
+                    key={occ.name}
+                    onClick={() =>
+                      setSelectedOccasion(occ.name === selectedOccasion ? "" : occ.name)
+                    }
+                    className={`px-2.5 py-1 text-[10px] tracking-luxury uppercase border transition-colors ${selectedOccasion === occ.name ? "border-gold bg-gold/15 text-gold" : "border-border text-muted-foreground hover:border-gold/50"}`}
+                  >
+                    {occ.name}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <button
-          onClick={() => setCartOpen(true)}
-          className="relative flex items-center gap-2 px-5 py-3 border border-gold text-gold text-[10px] tracking-luxury uppercase"
-        >
-          <ShoppingBag className="w-4 h-4" /> Bag
-          {cart.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-gold text-onyx text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
-              {cart.length}
-            </span>
-          )}
-        </button>
-      </section>
+            {/* Price range */}
+            <div>
+              <div className="text-[10px] tracking-luxury uppercase text-gold mb-3">
+                Max Price: {inr(maxPrice)}
+              </div>
+              <input
+                type="range"
+                min={1000}
+                max={60000}
+                step={500}
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(Number(e.target.value))}
+                className="w-full accent-gold"
+              />
+              <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                <span>₹1,000</span>
+                <span>₹60,000</span>
+              </div>
+            </div>
 
-      {/* Grid */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-10">
-        {list.length === 0 ? (
-          <p className="text-center text-muted-foreground py-20">
-            No pieces match — try another search.
-          </p>
-        ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {list.map((p) => (
-              <article key={p.id} className="group">
-                <div className="relative aspect-[3/4] overflow-hidden bg-card">
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+            {/* Availability */}
+            <div>
+              <div className="text-[10px] tracking-luxury uppercase text-gold mb-3">
+                Availability
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <div
+                  onClick={() => setShowInStockOnly((v) => !v)}
+                  className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer ${showInStockOnly ? "bg-gold" : "bg-border"}`}
+                >
+                  <div
+                    className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow ${showInStockOnly ? "translate-x-5" : "translate-x-0.5"}`}
                   />
-                  {p.tag && (
-                    <span className="absolute top-3 left-3 text-[10px] tracking-luxury uppercase bg-gold/95 text-onyx px-3 py-1">
-                      {p.tag}
-                    </span>
-                  )}
-                  <button
-                    onClick={() => toggleWish(p.id)}
-                    aria-label="Wishlist"
-                    className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center bg-background/70 backdrop-blur border border-border hover:border-gold"
-                  >
-                    <Heart
-                      className={`w-4 h-4 ${wishlist.has(p.id) ? "fill-gold text-gold" : "text-foreground"}`}
-                    />
-                  </button>
-                  <button
-                    onClick={() => addToCart(p)}
-                    className="absolute inset-x-3 bottom-3 py-3 bg-gradient-gold text-onyx text-[10px] tracking-luxury uppercase opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    Add to Bag
-                  </button>
                 </div>
-                <div className="mt-4">
+                <span className="text-sm text-muted-foreground">In Stock Only</span>
+              </label>
+            </div>
+
+            <div className="flex items-end">
+              <button
+                onClick={clearFilters}
+                className="text-xs tracking-luxury uppercase text-muted-foreground hover:text-gold transition-colors border border-border px-4 py-2"
+              >
+                Reset All
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Product grid */}
+        {loading ? null : filtered.length === 0 ? (
+          <div className="text-center py-24">
+            <Filter className="w-12 h-12 text-gold/30 mx-auto mb-4" />
+            <h3 className="font-display text-2xl">No products found</h3>
+            <p className="mt-2 text-muted-foreground text-sm">
+              Try adjusting your filters or search term.
+            </p>
+            <button onClick={clearFilters} className="btn-gold mt-6">
+              Clear All Filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {filtered.map((p) => {
+              const wishlisted = isWishlisted(p.id);
+              return (
+                <div key={p.id} className="group">
+                  <div className="relative aspect-[3/4] overflow-hidden mb-3">
+                    <Link to="/product/$id" params={{ id: p.id }}>
+                      <img
+                        src={p.images?.[0] || ""}
+                        alt={p.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                      />
+                    </Link>
+                    {p.tag && (
+                      <span className="absolute top-2 left-2 text-[10px] tracking-luxury uppercase bg-gold/90 text-onyx px-2 py-0.5 pointer-events-none">
+                        {p.tag}
+                      </span>
+                    )}
+                    {!p.inStock && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center pointer-events-none">
+                        <span className="text-[10px] tracking-luxury uppercase text-white bg-black/70 px-3 py-1">
+                          Out of Stock
+                        </span>
+                      </div>
+                    )}
+                    <div className="absolute top-2 right-2">
+                      <button
+                        onClick={() => toggleWishlist(p.id)}
+                        className={`w-8 h-8 flex items-center justify-center rounded-full backdrop-blur-sm transition-all ${wishlisted ? "bg-red-500/80 text-white" : "bg-black/50 text-white hover:bg-gold hover:text-onyx"}`}
+                      >
+                        <Heart className={`w-3.5 h-3.5 ${wishlisted ? "fill-white" : ""}`} />
+                      </button>
+                    </div>
+                    <div className="absolute inset-x-2 bottom-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      {p.inStock ? (
+                        <button
+                          onClick={() =>
+                            addToCart({
+                              productId: p.id,
+                              name: p.name,
+                              price: p.price,
+                              image: p.images?.[0] || "",
+                              size: p.sizes?.[0] ?? "Free Size",
+                              color: p.colors?.[0]?.name ?? "Default",
+                              quantity: 1,
+                            })
+                          }
+                          className="w-full py-2.5 bg-gradient-gold text-onyx text-[10px] tracking-luxury uppercase font-medium flex items-center justify-center gap-1.5"
+                        >
+                          <ShoppingBag className="w-3.5 h-3.5" />
+                          Add to Cart
+                        </button>
+                      ) : (
+                        <a
+                          href={`https://wa.me/919633419902?text=Hello%20Rassa%20Boutique%2C%20I'm%20interested%20in%20${encodeURIComponent(p.name)}%20which%20appears%20out%20of%20stock.%20Please%20let%20me%20know%20when%20it's%20available.`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block w-full py-2.5 bg-card border border-gold text-gold text-[10px] tracking-luxury uppercase font-medium text-center"
+                        >
+                          Notify Me
+                        </a>
+                      )}
+                    </div>
+                  </div>
                   <div className="text-[10px] tracking-luxury uppercase text-muted-foreground">
                     {p.category}
                   </div>
-                  <h3 className="mt-1 font-serif text-lg group-hover:text-gold transition-colors">
-                    {p.name}
-                  </h3>
-                  <p className="mt-1 text-sm text-foreground/80">{inr(p.price)}</p>
+                  <Link to="/product/$id" params={{ id: p.id }}>
+                    <h3 className="mt-1 font-serif text-base leading-snug hover:text-gold transition-colors line-clamp-2">
+                      {p.name}
+                    </h3>
+                  </Link>
+                  <div className="mt-1 flex items-center gap-2">
+                    <p className="text-sm text-gold">{inr(p.price)}</p>
+                    {p.originalPrice && (
+                      <p className="text-xs text-muted-foreground line-through">
+                        {inr(p.originalPrice)}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </article>
-            ))}
+              );
+            })}
           </div>
         )}
-      </section>
 
-      {/* CART DRAWER */}
-      {cartOpen && (
-        <div className="fixed inset-0 z-[60] flex" onClick={() => setCartOpen(false)}>
-          <div className="flex-1 bg-black/70 backdrop-blur-sm" />
-          <aside
-            className="w-full sm:w-[440px] bg-background border-l border-border h-full flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between p-6 border-b border-border">
-              <h2 className="font-display text-2xl text-gold">Your Bag</h2>
-              <button onClick={() => setCartOpen(false)} aria-label="Close">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {cart.length === 0 ? (
-                <p className="text-center text-muted-foreground py-12 font-serif italic">
-                  Your bag awaits its first treasure.
-                </p>
-              ) : (
-                cart.map((p, i) => (
-                  <div key={i} className="flex gap-4 pb-4 border-b border-border">
-                    <img src={p.image} alt={p.name} className="w-20 h-24 object-cover" />
-                    <div className="flex-1">
-                      <h4 className="font-serif">{p.name}</h4>
-                      <p className="text-xs text-muted-foreground mt-1">{p.category}</p>
-                      <p className="mt-2 text-sm text-gold">{inr(p.price)}</p>
-                    </div>
-                    <button
-                      onClick={() => setCart((c) => c.filter((_, idx) => idx !== i))}
-                      className="text-muted-foreground hover:text-gold text-xs"
-                    >
-                      Remove
-                    </button>
+        {/* Recently Viewed */}
+        {recentProducts.length > 0 && (
+          <section className="mt-20 pt-12 border-t border-border">
+            <h2 className="font-display text-2xl mb-6">Recently Viewed</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {recentProducts.slice(0, 6).map((p) => (
+                <Link key={p.id} to="/product/$id" params={{ id: p.id }} className="group block">
+                  <div className="relative aspect-[3/4] overflow-hidden mb-2">
+                    <img
+                      src={p.images?.[0] || ""}
+                      alt={p.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
                   </div>
-                ))
-              )}
+                  <div className="text-xs font-serif group-hover:text-gold transition-colors line-clamp-2">
+                    {p.name}
+                  </div>
+                  <div className="text-xs text-gold mt-0.5">{inr(p.price)}</div>
+                </Link>
+              ))}
             </div>
-            {cart.length > 0 && (
-              <div className="p-6 border-t border-border space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="tracking-wide-luxury uppercase">Subtotal</span>
-                  <span className="text-gold">{inr(total)}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Shipping & taxes calculated at checkout.
-                </p>
-                <button className="btn-gold w-full">Proceed to Checkout</button>
-                <p className="text-[10px] text-center text-muted-foreground tracking-wide-luxury uppercase">
-                  Razorpay · UPI · Card · COD ready
-                </p>
-              </div>
-            )}
-          </aside>
-        </div>
-      )}
+          </section>
+        )}
+      </div>
     </div>
   );
 }

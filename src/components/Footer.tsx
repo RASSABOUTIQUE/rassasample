@@ -1,128 +1,133 @@
 import { Link } from "@tanstack/react-router";
-import { Instagram, MessageCircle, MapPin, Phone, Mail } from "lucide-react";
+import { MapPin, Phone, Instagram, MessageCircle } from "lucide-react";
 import logo from "@/assets/rassa-logo-custom.png";
+import { useCMS } from "@/lib/cms";
+
+const shopLinks = [
+  { to: "/shop", label: "All Products" },
+  { to: "/shop", label: "New Arrivals" },
+  { to: "/shop", label: "Kasavu Sarees" },
+  { to: "/shop", label: "Silk Sarees" },
+  { to: "/shop", label: "Bridal Wear" },
+  { to: "/shop", label: "Churidar Sets" },
+  { to: "/shop", label: "Kurtis" },
+];
+
+const helpLinks = [
+  { to: "/faq", label: "FAQ" },
+  { to: "/faq", label: "Shipping & Delivery" },
+  { to: "/faq", label: "Returns & Exchanges" },
+  { to: "/track-order", label: "Track Order" },
+  { to: "/custom-stitching", label: "Custom Stitching" },
+  { to: "/contact", label: "Contact Us" },
+];
+
+const aboutLinks = [
+  { to: "/about", label: "About Rassa" },
+  { to: "/visit-store", label: "Visit Store" },
+  { to: "/custom-stitching", label: "Book a Consultation" },
+];
 
 export function Footer() {
+  const { cms } = useCMS();
+  const store = cms.store;
   return (
-    <footer className="relative border-t border-border bg-background pt-20 pb-10 overflow-hidden">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold to-transparent opacity-60" />
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-4 gap-12">
-        <div className="lg:col-span-1">
-          <img
-            src={logo}
-            alt="Rassa Boutique"
-            width={64}
-            height={64}
-            className="h-16 w-16 object-contain mb-4"
-          />
-          <p className="font-serif italic text-gold text-lg">Where Elegance Becomes Identity</p>
-          <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
-            A women's luxury boutique crafted in the spirit of timeless Indian elegance.
-          </p>
-        </div>
-
-        <div>
-          <h4 className="text-xs tracking-luxury uppercase text-gold mb-5">Explore</h4>
-          <ul className="space-y-3 text-sm text-foreground/80">
-            <li>
-              <Link to="/collections" className="hover-gold">
-                Collections
-              </Link>
-            </li>
-            <li>
-              <Link to="/lookbook" className="hover-gold">
-                Lookbook
-              </Link>
-            </li>
-            <li>
-              <Link to="/shop" className="hover-gold">
-                Shop
-              </Link>
-            </li>
-            <li>
-              <Link to="/custom-stitching" className="hover-gold">
-                Custom Stitching
-              </Link>
-            </li>
-            <li>
-              <Link to="/visit-store" className="hover-gold">
-                Visit Store
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="text-xs tracking-luxury uppercase text-gold mb-5">Atelier</h4>
-          <ul className="space-y-3 text-sm text-foreground/80">
-            <li className="flex gap-3">
-              <MapPin className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-              <span>
-                Poolacode, Chathamangalam, Kattangal–Koduvally Rd, Kozhikode, Kerala 673601
-              </span>
-            </li>
-            <li className="flex gap-3">
-              <Phone className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-              <a href="tel:+919633419902" className="hover-gold">
-                +91 96334 19902
+    <footer className="border-t border-border bg-background pb-16 lg:pb-0">
+      <div className="max-w-7xl mx-auto px-6 lg:px-10 pt-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 pb-12 border-b border-border">
+          {/* Brand column */}
+          <div className="col-span-2 md:col-span-1">
+            <Link to="/" className="flex items-center gap-2 mb-4">
+              <img src={logo} alt="Rassa Boutique" className="h-9 w-9 object-contain" />
+              <span className="font-display text-lg tracking-wide-luxury text-gold">RASSA</span>
+            </Link>
+            <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+              Kerala's premium women's boutique — silk sarees, kasavu, bridal wear, and custom
+              stitching. Based in Kozhikode since our founding.
+            </p>
+            <div className="flex items-center gap-3 mb-2 text-xs text-muted-foreground">
+              <MapPin className="w-3.5 h-3.5 text-gold shrink-0" />
+              <span>{store.address}, {store.city} {store.pincode}</span>
+            </div>
+            <div className="flex items-center gap-3 mb-3 text-xs text-muted-foreground">
+              <Phone className="w-3.5 h-3.5 text-gold shrink-0" />
+              <a href={`tel:${store.phone.replace(/[^0-9+]/g, "")}`} className="hover:text-gold transition-colors">
+                {store.phone}
               </a>
-            </li>
-            <li className="flex gap-3">
-              <Mail className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-              <a href="mailto:rassaboutique@gmail.com" className="hover-gold">
-                rassaboutique@gmail.com
+            </div>
+            <div className="text-xs text-muted-foreground mb-5">
+              <div className="font-medium text-foreground/70 mb-1">Store Hours</div>
+              <div>Mon–Sat: 10am – 9pm</div>
+              <div>Sunday: 11am – 8pm</div>
+            </div>
+            <div className="flex items-center gap-4 mt-6">
+              <a href={store.instagram || "https://instagram.com/rassa_boutique"} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:border-gold hover:text-gold transition-all">
+                <Instagram className="w-3.5 h-3.5" />
               </a>
-            </li>
-          </ul>
-        </div>
+              <a href={`https://wa.me/${store.whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:border-gold hover:text-gold transition-all">
+                <MessageCircle className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
 
-        <div>
-          <h4 className="text-xs tracking-luxury uppercase text-gold mb-5">Newsletter</h4>
-          <p className="text-sm text-muted-foreground mb-4">
-            Receive private previews of new collections.
-          </p>
-          <form
-            className="flex border border-border"
-            onSubmit={(e) => {
-              e.preventDefault();
-            }}
-          >
-            <input
-              type="email"
-              required
-              placeholder="Your email"
-              className="bg-transparent px-4 py-3 text-sm flex-1 outline-none placeholder:text-muted-foreground"
-            />
-            <button className="bg-gradient-gold px-5 text-xs tracking-luxury uppercase text-onyx font-medium">
-              Join
-            </button>
-          </form>
-          <div className="flex items-center gap-4 mt-6">
-            <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Instagram"
-              className="hover-gold"
-            >
-              <Instagram className="w-5 h-5" />
-            </a>
-            <a
-              href="https://wa.me/919633419902"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="WhatsApp"
-              className="hover-gold"
-            >
-              <MessageCircle className="w-5 h-5" />
-            </a>
+          {/* Shop */}
+          <div>
+            <div className="text-[10px] tracking-luxury uppercase text-gold mb-4">Shop</div>
+            <ul className="space-y-2.5">
+              {shopLinks.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.to} className="text-xs text-muted-foreground hover:text-gold transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Help */}
+          <div>
+            <div className="text-[10px] tracking-luxury uppercase text-gold mb-4">Help & Support</div>
+            <ul className="space-y-2.5">
+              {helpLinks.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.to} className="text-xs text-muted-foreground hover:text-gold transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* About */}
+          <div>
+            <div className="text-[10px] tracking-luxury uppercase text-gold mb-4">Our Boutique</div>
+            <ul className="space-y-2.5 mb-6">
+              {aboutLinks.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.to} className="text-xs text-muted-foreground hover:text-gold transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            {/* Payments */}
+            <div className="text-[10px] tracking-luxury uppercase text-gold mb-3">We Accept</div>
+            <div className="flex flex-wrap gap-2 text-[9px] text-muted-foreground">
+              {["COD", "UPI", "Bank Transfer", "Razorpay (Soon)"].map((p) => (
+                <span key={p} className="border border-border px-2 py-1 bg-card">{p}</span>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 mt-14 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs tracking-wide-luxury uppercase text-muted-foreground">
-        <span>© {new Date().getFullYear()} Rassa Boutique</span>
-        <span>Crafted with reverence in Kerala</span>
+        <div className="py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+          <span>© 2026 Rassa Boutique · Kozhikode, Kerala. All rights reserved.</span>
+          <div className="flex gap-4">
+            <Link to="/faq" className="hover:text-gold transition-colors">Return Policy</Link>
+            <Link to="/faq" className="hover:text-gold transition-colors">Privacy Policy</Link>
+          </div>
+        </div>
       </div>
     </footer>
   );

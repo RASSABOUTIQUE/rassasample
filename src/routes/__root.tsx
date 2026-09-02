@@ -75,18 +75,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "theme-color", content: "#1A1A1A" },
-      { title: "Rassa Boutique — Where Elegance Becomes Identity" },
+      { title: "Rassa Boutique — Kerala's Premier Women's Boutique, Kozhikode" },
       {
         name: "description",
         content:
-          "Rassa Boutique — a luxury women's fashion atelier in Kozhikode, Kerala. Sarees, bridal lehengas, ethnic wear and bespoke custom stitching.",
+          "Rassa Boutique in Kozhikode, Kerala — silk sarees, kasavu sarees, Kerala bridal wear, churidars, kurtis and custom stitching. Shop online or visit our store.",
       },
       { name: "author", content: "Rassa Boutique" },
-      { property: "og:title", content: "Rassa Boutique — Where Elegance Becomes Identity" },
+      { property: "og:title", content: "Rassa Boutique — Kerala's Premier Women's Boutique" },
       {
         property: "og:description",
         content:
-          "Luxury Indian fashion atelier in Kozhikode, Kerala. Sarees, bridal lehengas and bespoke couture.",
+          "Silk sarees, kasavu, bridal wear, churidars, kurtis and custom stitching. Kerala's premium boutique in Kozhikode — now with online shopping.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -128,7 +128,7 @@ function RootComponent() {
       <LoadingScreen />
       <CustomCursor />
       <Header />
-      <main className="min-h-screen">
+      <main className="min-h-screen pb-16 lg:pb-0">
         <Outlet />
       </main>
       <Footer />
