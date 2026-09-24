@@ -129,11 +129,11 @@ const sections: { title: string; items: FaqItem[] }[] = [
     items: [
       {
         q: "Where is Rassa Boutique located?",
-        a: "We're located at Poolacode, Chathamangalam, Kattangal–Koduvally Road, Kozhikode, Kerala — 673601. Near NIT Employees Co-operative Society.",
+        a: "We're located near NIT Calicut Campus, Kattangal-Koduvally Road, Kattangal, Kozhikode, Kerala — 673601. Near Foodies Restaurant, easily accessible from NIT Calicut main gate.",
       },
       {
         q: "What are your store hours?",
-        a: "Monday to Saturday: 10:00 am – 9:00 pm. Sunday: 11:00 am – 8:00 pm.",
+        a: "Monday to Saturday: 11:00 am – 11:00 pm. Sunday: 11:00 am – 8:00 pm.",
       },
       {
         q: "Do I need an appointment to visit?",
@@ -214,6 +214,74 @@ function FaqPage() {
           >
             WhatsApp Us
           </a>
+        </div>
+      </div>
+
+      {/* ─── Legal Policies ─────────────────────────────────────────────────── */}
+      <div id="policies" className="max-w-3xl mx-auto px-6 mt-20 pb-10 reveal">
+        <div className="border-t border-border/40 pt-12">
+          <h2 className="font-display text-3xl text-gold mb-2 text-center">Store Policies</h2>
+          <p className="text-xs text-muted-foreground text-center mb-12">
+            Rassa Boutique operates in compliance with the Consumer Protection (E-Commerce) Rules 2020 and the Information Technology Act, India.
+          </p>
+
+          <div className="space-y-10">
+
+            {/* Privacy Policy */}
+            <section>
+              <h3 className="font-display text-xl text-gold mb-4 pb-2 border-b border-border/50">Privacy Policy</h3>
+              <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
+                <p><strong className="text-foreground/80">Information We Collect:</strong> We collect only the information necessary to process your orders — your name, delivery address, phone number, and email. Payment details are processed securely and never stored on our servers.</p>
+                <p><strong className="text-foreground/80">How We Use Your Information:</strong> Your information is used solely to fulfill your orders, communicate order updates via WhatsApp, and provide customer support. We do not sell, rent, or share your personal data with any third party.</p>
+                <p><strong className="text-foreground/80">Data Storage:</strong> Order information is stored securely in our database. We retain order records for up to 2 years for legal and accounting compliance.</p>
+                <p><strong className="text-foreground/80">Cookies:</strong> Our website uses minimal cookies to maintain your cart and session state. No tracking or advertising cookies are used.</p>
+                <p><strong className="text-foreground/80">Contact:</strong> For privacy concerns, email us at rassaboutique@gmail.com or WhatsApp +91 9633419902.</p>
+              </div>
+            </section>
+
+            {/* Return & Refund Policy */}
+            <section>
+              <h3 className="font-display text-xl text-gold mb-4 pb-2 border-b border-border/50">Return &amp; Refund Policy</h3>
+              <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
+                <p><strong className="text-foreground/80">Return Window:</strong> We accept returns within 7 days of delivery for non-stitched items (sarees, ready-made garments) — provided the item is unused, unwashed, and in original condition with tags attached.</p>
+                <p><strong className="text-foreground/80">Non-Returnable Items:</strong> Custom-stitched garments cannot be returned unless there is a verified stitching defect. Items marked as final sale are also non-returnable.</p>
+                <p><strong className="text-foreground/80">How to Initiate a Return:</strong> WhatsApp us at +91 9633419902 with your Order ID and reason for return within 7 days of delivery.</p>
+                <p><strong className="text-foreground/80">Refund Processing:</strong> Refunds are processed within 5–7 working days after we receive and inspect the returned item. Amount will be refunded to your original payment method or via bank transfer/UPI.</p>
+                <p><strong className="text-foreground/80">Exchange:</strong> We accept size/colour exchanges within 7 days of delivery, subject to stock availability.</p>
+              </div>
+            </section>
+
+            {/* Shipping Policy */}
+            <section>
+              <h3 className="font-display text-xl text-gold mb-4 pb-2 border-b border-border/50">Shipping Policy</h3>
+              <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
+                <p><strong className="text-foreground/80">Delivery Areas:</strong> We ship across Kerala and all major cities in India. Some remote pin codes may not be serviceable — we will inform you via WhatsApp if your area is not reachable.</p>
+                <p><strong className="text-foreground/80">Standard Delivery:</strong> 3–7 working days · ₹80 (Free on orders above ₹2,000).</p>
+                <p><strong className="text-foreground/80">Express Delivery:</strong> 1–3 working days · ₹150.</p>
+                <p><strong className="text-foreground/80">Store Pickup:</strong> Free — ready at our Kattangal store within 1 working day.</p>
+                <p><strong className="text-foreground/80">Tracking:</strong> Once dispatched, we'll send your tracking details via WhatsApp. You can also use our Track Order page.</p>
+              </div>
+            </section>
+
+            {/* Terms & Conditions */}
+            <section>
+              <h3 className="font-display text-xl text-gold mb-4 pb-2 border-b border-border/50">Terms &amp; Conditions</h3>
+              <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
+                <p><strong className="text-foreground/80">Acceptance:</strong> By placing an order on our website, you agree to these terms and conditions. These terms are governed by the laws of India.</p>
+                <p><strong className="text-foreground/80">Product Information:</strong> We make every effort to display accurate colours and descriptions. Slight colour variations may occur due to screen settings. Fabric pattern placement may vary slightly from images shown.</p>
+                <p><strong className="text-foreground/80">Pricing:</strong> All prices are in Indian Rupees (INR). We reserve the right to correct pricing errors before processing an order.</p>
+                <p><strong className="text-foreground/80">Order Cancellation:</strong> You can cancel your order within 24 hours of placing it by contacting us on WhatsApp at +91 9633419902. After 24 hours, cancellation may not be possible if the order has been dispatched.</p>
+                <p><strong className="text-foreground/80">Liability:</strong> Rassa Boutique is not liable for delays or failures due to circumstances beyond our control (natural disasters, courier disruptions, etc.).</p>
+                <p><strong className="text-foreground/80">Dispute Resolution:</strong> Any disputes shall be subject to the exclusive jurisdiction of the courts in Kozhikode, Kerala, India.</p>
+                <p><strong className="text-foreground/80">Contact:</strong> Rassa Boutique · Near NIT Calicut Campus, Kattangal-Koduvally Road, Kattangal, Kozhikode, Kerala 673601 · rassaboutique@gmail.com · +91 9633419902.</p>
+              </div>
+            </section>
+
+          </div>
+
+          <p className="mt-10 text-[10px] text-muted-foreground text-center">
+            Last updated: September 2026 · Rassa Boutique · Kozhikode, Kerala
+          </p>
         </div>
       </div>
     </div>

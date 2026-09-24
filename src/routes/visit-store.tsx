@@ -49,14 +49,14 @@ function VisitStore() {
               <MapPin className="w-4 h-4" /> Address
             </div>
             <p className="mt-3 font-serif text-xl leading-relaxed">
-              Poolacode, Chathamangalam,
+              Near NIT Calicut Campus,
               <br />
-              Kattangal–Koduvally Road,
+              Kattangal-Koduvally Road,
               <br />
-              Kozhikode, Kerala — 673601
+              Kattangal, Kozhikode, Kerala — 673601
             </p>
             <p className="mt-3 text-sm text-muted-foreground">
-              Near NIT Employees Co-operative Society &amp; Margin Free Supermarket.
+              Near Foodies Restaurant. Easily accessible from NIT Calicut main gate.
             </p>
           </div>
 
@@ -67,7 +67,7 @@ function VisitStore() {
             <ul className="mt-3 space-y-2 font-serif text-lg">
               <li className="flex justify-between max-w-xs">
                 <span>Monday – Saturday</span>
-                <span>10:00 am – 9:00 pm</span>
+                <span>11:00 am – 11:00 pm</span>
               </li>
               <li className="flex justify-between max-w-xs">
                 <span>Sunday</span>
@@ -92,7 +92,7 @@ function VisitStore() {
 
           <div className="flex flex-wrap gap-3 pt-2">
             <a
-              href="https://maps.google.com/?q=Chathamangalam+Kozhikode+Kerala+673601"
+              href="https://maps.google.com/?q=Rassa+Boutique+Kattangal+Kozhikode+Kerala+673601"
               target="_blank"
               rel="noreferrer"
               className="btn-gold"
@@ -112,8 +112,8 @@ function VisitStore() {
 
         <div className="reveal relative aspect-[4/5] overflow-hidden border border-border">
           <iframe
-            title="Rassa Boutique location, Kozhikode Kerala"
-            src="https://www.google.com/maps?q=Chathamangalam,+Kozhikode,+Kerala+673601&output=embed"
+            title="Rassa Boutique location, Kattangal Kozhikode Kerala"
+            src="https://maps.google.com/maps?q=Rassa+Boutique+Kattangal+Kozhikode+Kerala+673601&output=embed"
             className="absolute inset-0 w-full h-full grayscale contrast-125"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"

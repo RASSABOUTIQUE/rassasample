@@ -1,0 +1,29 @@
+﻿name: Supabase Keepalive
+
+# Runs DAILY at 6:00 AM UTC — prevents Supabase free-tier 7-day auto-pause
+# Also supports manual trigger from GitHub Actions UI
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    name: Query Supabase Database
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query products table (read-only, no insert/update/delete)
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/products?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
+
+          echo "Supabase query status: $STATUS"
+
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "Supabase is awake. Database query succeeded."
+          else
+            echo "ERROR: Unexpected status $STATUS — Supabase may be paused or unreachable."
+            exit 1
+          fi

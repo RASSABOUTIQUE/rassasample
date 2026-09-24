@@ -57,7 +57,7 @@ export function Footer() {
             </div>
             <div className="text-xs text-muted-foreground mb-5">
               <div className="font-medium text-foreground/70 mb-1">Store Hours</div>
-              <div>Mon–Sat: 10am – 9pm</div>
+              <div>Mon–Sat: 11am – 11pm</div>
               <div>Sunday: 11am – 8pm</div>
             </div>
             <div className="flex items-center gap-4 mt-6">
@@ -125,7 +125,8 @@ export function Footer() {
           <span>© 2026 Rassa Boutique · Kozhikode, Kerala. All rights reserved.</span>
           <div className="flex gap-4">
             <Link to="/faq" className="hover:text-gold transition-colors">Return Policy</Link>
-            <Link to="/faq" className="hover:text-gold transition-colors">Privacy Policy</Link>
+            <Link to="/faq" hash="policies" className="hover:text-gold transition-colors">Privacy Policy</Link>
+            <Link to="/faq" hash="policies" className="hover:text-gold transition-colors">Terms</Link>
           </div>
         </div>
       </div>

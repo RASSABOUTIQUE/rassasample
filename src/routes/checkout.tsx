@@ -115,8 +115,6 @@ function CheckoutPage() {
     pincode: user?.defaultAddress?.pincode ?? "",
     shippingMethod: "standard",
     paymentMethod: "cod",
-    couponCode: "",
-    couponDiscount: 0,
   });
 
   const set = (key: keyof typeof form) => (val: string) =>
@@ -187,23 +185,9 @@ function CheckoutPage() {
           ? 0
           : 80;
 
-  const total = subtotal + shippingCost - form.couponDiscount;
+  const total = subtotal + shippingCost;
   const currentIdx = STEPS.findIndex((s) => s.id === step);
 
-  // ─── Coupon logic ──────────────────────────────────────────────────────────
-  const COUPONS: Record<string, number> = {
-    RASSA10: 0.1,
-    WELCOME15: 0.15,
-    ONAM20: 0.2,
-  };
-
-  const applyCoupon = () => {
-    const code = form.couponCode.trim().toUpperCase();
-    const discount = COUPONS[code];
-    if (discount) {
-      setForm((f) => ({ ...f, couponDiscount: Math.round(subtotal * discount) }));
-    }
-  };
 
   const handleRazorpayPayment = async () => {
     setProcessing(true);
@@ -323,13 +307,12 @@ function CheckoutPage() {
         })),
         subtotal,
         shippingCost,
-        discount: form.couponDiscount,
+        discount: 0,
         total,
         status: "placed" as const,
         paymentMethod,
         paymentStatus,
         razorpayPaymentId,
-        couponCode: form.couponCode || undefined,
         address: form.address,
         city: form.city,
         state: form.state,
@@ -355,31 +338,37 @@ function CheckoutPage() {
         paymentMethod,
       }));
 
-      // 3. WhatsApp notification (open in background) if payment is WhatsApp
-      // Or we can always send order confirmation to WhatsApp
+      // 3. WhatsApp notification if payment is WhatsApp or COD
       if (paymentMethod === "whatsapp" || paymentMethod === "cod") {
         const itemsList = items
           .map((i) => `• ${i.name}\n  Qty: ${i.quantity} | Size: ${i.size || "N/A"}\n  Price: ${inr(i.price * i.quantity)}`)
           .join("\n\n");
 
+        // Order is already saved to Supabase above.
+        // The Order ID is the source of truth — admin must verify amount
+        // by looking up this Order ID in the Supabase dashboard.
         const waMsg =
-          `*RECEIPT | RASSA BOUTIQUE*\n` +
-          `------------------------\n` +
-          `*Order ID:* ${orderNo}\n` +
+          `⭐ *NEW ORDER | RASSA BOUTIQUE* ⭐\n` +
+          `================================\n` +
+          `*ORDER ID: ${orderNo}*\n` +
+          `================================\n` +
           `*Customer:* ${form.name}\n` +
           `*Phone:* ${form.phone}\n` +
           `*Address:* ${form.address}, ${form.city}, ${form.state} — ${form.pincode}\n` +
-          `------------------------\n` +
-          `*Items:*\n${itemsList}\n` +
-          `------------------------\n` +
+          `--------------------------------\n` +
+          `*ITEMS:*\n${itemsList}\n` +
+          `--------------------------------\n` +
           `*Subtotal:* ${inr(subtotal)}\n` +
-          (form.couponDiscount > 0 ? `*Discount:* -${inr(form.couponDiscount)}\n` : "") +
           `*Shipping:* ${shippingCost === 0 ? "Free" : inr(shippingCost)}\n` +
-          `*Total:* ${inr(total)}\n` +
-          `------------------------\n` +
-          `*Payment Method:* ${paymentMethod === "cod" ? "Cash on Delivery" : paymentMethod === "razorpay" ? "Razorpay" : "WhatsApp Payment"}\n` +
-          `------------------------\n` +
-          `Thank you for shopping with us!`;
+          `*TOTAL: ${inr(total)}*\n` +
+          `--------------------------------\n` +
+          `*Payment:* ${paymentMethod === "cod" ? "Cash on Delivery" : "WhatsApp Payment (UPI/Bank Transfer)"}\n` +
+          `================================\n` +
+          `⚠️ DO NOT EDIT THIS MESSAGE.\n` +
+          `Amount is locked against Order ID: ${orderNo}\n` +
+          `Any changes will be rejected.\n` +
+          `================================\n` +
+          `Thank you for choosing Rassa Boutique! 💗`;
 
         window.open(
           `https://wa.me/919633419902?text=${encodeURIComponent(waMsg)}`,
@@ -539,26 +528,7 @@ function CheckoutPage() {
                   </label>
                 </div>
 
-                {/* Coupon */}
-                <div className="mb-5 p-4 border border-border bg-background">
-                  <div className="text-[10px] tracking-luxury uppercase text-gold mb-3">Coupon Code</div>
-                  <div className="flex gap-2">
-                    <input
-                      value={form.couponCode}
-                      onChange={(e) => set("couponCode")(e.target.value.toUpperCase())}
-                      placeholder="Enter coupon code"
-                      className="flex-1 bg-card border border-border px-4 py-2.5 text-sm outline-none focus:border-gold transition-colors uppercase"
-                    />
-                    <button onClick={applyCoupon} className="px-4 py-2.5 border border-gold text-gold text-[10px] tracking-luxury uppercase hover:bg-gold hover:text-onyx transition-all">Apply</button>
-                  </div>
-                  {form.couponDiscount > 0 && (
-                    <div className="mt-2 text-xs text-green-400 flex items-center gap-1">
-                      <CheckCircle className="w-3 h-3" />
-                      Coupon applied! You save {inr(form.couponDiscount)}
-                    </div>
-                  )}
-                  <div className="mt-2 text-[10px] text-muted-foreground">Try: RASSA10 · WELCOME15 · ONAM20</div>
-                </div>
+
 
                 <div className="flex items-center gap-2 text-xs text-muted-foreground p-3 border border-border bg-card mb-5">
                   <ShieldCheck className="w-4 h-4 text-gold shrink-0" />
@@ -647,12 +617,7 @@ function CheckoutPage() {
                   <span className="text-muted-foreground">Shipping</span>
                   <span className={shippingCost === 0 ? "text-green-500" : ""}>{shippingCost === 0 ? "Free" : inr(shippingCost)}</span>
                 </div>
-                {form.couponDiscount > 0 && (
-                  <div className="flex justify-between text-green-400">
-                    <span>Coupon ({form.couponCode})</span>
-                    <span>−{inr(form.couponDiscount)}</span>
-                  </div>
-                )}
+
                 <div className="flex justify-between font-medium text-gold pt-2 border-t border-border">
                   <span className="font-display">Total</span>
                   <span className="font-display text-xl">{inr(total)}</span>
