@@ -63,7 +63,7 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
       console.log("[ADMIN TRACE] before loginAdmin");
       const loginPromise = loginAdmin(email, pw);
       const timeoutPromise = new Promise<{ok: boolean, error: string}>((_, reject) => 
-        setTimeout(() => reject(new Error("Timeout: loginAdmin took longer than 10 seconds")), 10000)
+        setTimeout(() => reject(new Error("Timeout: loginAdmin took longer than 30 seconds")), 30000)
       );
       
       const res = await Promise.race([loginPromise, timeoutPromise]) as {ok: boolean, error?: string};
